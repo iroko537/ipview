@@ -1,0 +1,15 @@
+/* Custom styles/overrides that are hard to do with just Tailwind utilities */
+
+/* Invert map tiles in dark mode */
+html.dark .leaflet-layer,
+html.dark .leaflet-control-zoom-in,
+html.dark .leaflet-control-zoom-out,
+html.dark .leaflet-control-attribution {
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+/* Ensure map container has height if tailwind fails for some reason, though class is set */
+#map {
+    width: 100%;
+    height: 100%;
+}
