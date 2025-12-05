@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP View - Functional Copy of ip.fish</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Fix for Leaflet map visibility if needed */
+        #map { min-height: 300px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>My IP Address</h1>
+            <button id="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+        </header>
+
+        <main>
+            <section id="ip-section">
+                <div class="ip-display">
+                    <h2 id="ip-address">Loading...</h2>
+                    <button id="copy-btn" title="Copy to clipboard">
+                        <span class="icon">📋</span>
+                        <span class="text">Copy</span>
+                    </button>
+                    <span id="copy-success" class="hidden">✔ copied!</span>
+                </div>
+                <p id="location">Detecting location...</p>
+            </section>
+
+            <section id="details-section">
+                <h3>Details</h3>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="label">ISP:</span>
+                        <span id="isp" class="value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Timezone:</span>
+                        <span id="timezone" class="value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">ASN:</span>
+                        <span id="asn" class="value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">User Agent:</span>
+                        <span id="user-agent" class="value">-</span>
+                    </div>
+                </div>
+            </section>
+
+            <section id="map-section">
+                <div id="map"></div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Functional copy of <a href="https://ip.fish/" target="_blank">ip.fish</a> | <a href="https://github.com/your-repo" target="_blank">Source</a></p>
+        </footer>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="script.js"></script>
+</body>
+</html>
