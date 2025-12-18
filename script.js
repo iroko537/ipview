@@ -18,10 +18,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Dark Mode Logic
     const currentTheme = localStorage.getItem('theme');
 
-    // Check local storage or system preference
-    if (currentTheme === 'dark' || (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    // Check local storage, or time of day (6 PM to 6 AM is dark), or system preference
+    let isDark = false;
+
+    if (currentTheme) {
+        isDark = currentTheme === 'dark';
+    } else {
+        const hour = new Date().getHours();
+        const isNight = hour < 6 || hour >= 18;
+        // Prioritize time of day, but could also respect system preference if needed.
+        // User asked for "based on time of day", so let's default to that if no preference saved.
+        isDark = isNight;
+    }
+
+    if (isDark) {
         document.documentElement.classList.add('dark');
-        // Icon visibility is handled by CSS classes (hidden/block) based on parent 'dark' class
     } else {
         document.documentElement.classList.remove('dark');
     }

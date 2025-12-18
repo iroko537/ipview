@@ -1,5 +1,6 @@
 from playwright.sync_api import sync_playwright, expect
 import time
+import re
 
 def verify_ip_view():
     with sync_playwright() as p:
@@ -23,9 +24,14 @@ def verify_ip_view():
         # Verify map is present (Leaflet initializes it)
         expect(page.locator("#map")).to_be_visible()
 
-        # Take a screenshot of light mode
-        page.screenshot(path="verification/light_mode_tailwind.png")
-        print("Light mode screenshot taken.")
+        # Check current state (it might be dark already due to time of day)
+        html = page.locator("html")
+        is_dark_initially = "dark" in html.get_attribute("class")
+
+        print(f"Initial state is dark: {is_dark_initially}")
+
+        # Take a screenshot of initial state
+        page.screenshot(path="verification/initial_state.png")
 
         # Toggle Dark Mode
         theme_toggle = page.locator("#theme-toggle")
@@ -34,15 +40,18 @@ def verify_ip_view():
         # Wait for transition
         time.sleep(0.5)
 
-        # Verify dark mode class on html element
-        html = page.locator("html")
-        # to_have_class expects exact match or regex, but "dark" is one of many classes (e.g. "h-full dark")
-        # So we use regex to check if 'dark' is present in the class list
-        import re
-        expect(html).to_have_class(re.compile(r"\bdark\b"))
+        # Verify state flipped
+        if is_dark_initially:
+            # Should be light now (no 'dark' class)
+            expect(html).not_to_have_class(re.compile(r"\bdark\b"))
+            print("Verified toggle to light mode.")
+        else:
+            # Should be dark now
+            expect(html).to_have_class(re.compile(r"\bdark\b"))
+            print("Verified toggle to dark mode.")
 
-        # Take a screenshot of dark mode
-        page.screenshot(path="verification/dark_mode_tailwind.png")
+        # Take a screenshot of toggled state
+        page.screenshot(path="verification/toggled_state.png")
         print("Dark mode screenshot taken.")
 
         browser.close()
