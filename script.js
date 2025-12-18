@@ -17,41 +17,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Dark Mode Logic
     const currentTheme = localStorage.getItem('theme');
-    if (currentTheme) {
-        document.documentElement.setAttribute('data-theme', currentTheme);
-        themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    // Check local storage or system preference
+    if (currentTheme === 'dark' || (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        // Icon visibility is handled by CSS classes (hidden/block) based on parent 'dark' class
+    } else {
+        document.documentElement.classList.remove('dark');
     }
 
     themeToggle.addEventListener('click', () => {
-        let theme = document.documentElement.getAttribute('data-theme');
-        if (theme === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'light');
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
             localStorage.setItem('theme', 'light');
-            themeToggle.textContent = '🌙';
         } else {
-            document.documentElement.setAttribute('data-theme', 'dark');
+            document.documentElement.classList.add('dark');
             localStorage.setItem('theme', 'dark');
-            themeToggle.textContent = '☀️';
         }
     });
 
     // Populate User Agent
-    userAgentEl.textContent = navigator.userAgent;
+    // Shorten it for display but keep full title
+    const ua = navigator.userAgent;
+    userAgentEl.textContent = ua;
+    userAgentEl.title = ua;
 
     // Fetch IP Data from ipwho.is (CORS friendly)
     fetch('https://ipwho.is/')
         .then(response => {
-            console.log('Fetching from https://ipwho.is/');
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
             return response.json();
         })
         .then(data => {
-            console.log('Data received:', data);
             // Update UI with data
             if (!data.success) {
-                // If API returns success: false
                  throw new Error(data.message || 'API Error');
             }
 
@@ -59,8 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
             locationEl.textContent = `${data.city}, ${data.region}, ${data.country}`;
 
             ispEl.textContent = data.connection?.isp || data.connection?.org || '-';
+            ispEl.title = ispEl.textContent;
+
             timezoneEl.textContent = `${data.timezone?.id} (UTC${data.timezone?.utc})`;
+            timezoneEl.title = timezoneEl.textContent;
+
             asnEl.textContent = data.connection?.asn || '-';
+            asnEl.title = asnEl.textContent;
 
             // Initialize Map
             if (data.latitude && data.longitude) {
@@ -69,21 +75,19 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(error => {
             console.error('Error fetching IP data:', error);
-            ipAddressEl.textContent = 'Error fetching IP';
-            locationEl.textContent = 'Could not detect location';
-
-            // If ipwho.is fails, we could try ipapi.co as fallback or just show error.
-            // For now, logging error.
+            ipAddressEl.textContent = 'Error';
+            locationEl.textContent = 'Check console';
         });
 
     // Copy to Clipboard
     copyBtn.addEventListener('click', () => {
         const ipText = ipAddressEl.textContent;
-        if (ipText && ipText !== 'Loading...' && ipText !== 'Error fetching IP') {
+        if (ipText && ipText !== 'Loading...' && ipText !== 'Error') {
             navigator.clipboard.writeText(ipText).then(() => {
-                copySuccess.classList.remove('hidden');
+                // Show success message
+                copySuccess.classList.remove('opacity-0');
                 setTimeout(() => {
-                    copySuccess.classList.add('hidden');
+                    copySuccess.classList.add('opacity-0');
                 }, 2000);
             }).catch(err => {
                 console.error('Failed to copy: ', err);
@@ -97,7 +101,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (map) {
              map.remove();
         }
-        map = L.map('map').setView([lat, lng], 13);
+
+        // Disable some controls for a cleaner "background" feel?
+        // Or keep them minimal.
+        map = L.map('map', {
+            zoomControl: false,
+            scrollWheelZoom: false,
+            attributionControl: false // We will add attribution manually or keep it small
+        }).setView([lat, lng], 13);
+
+        // Re-enable zoom control in bottom right maybe?
+        L.control.zoom({
+            position: 'bottomright'
+        }).addTo(map);
+
+        // Attribution (standard required by OSM)
+        L.control.attribution({
+            position: 'bottomright'
+        }).addTo(map);
 
         // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
